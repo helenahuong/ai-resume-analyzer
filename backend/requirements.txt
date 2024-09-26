@@ -1,0 +1,9 @@
+fastapi>=0.100.0
+uvicorn[standard]
+pydantic-settings
+spacy
+PyPDF2
+python-docx
+python-multipart
+openai
+en-core-web-sm==3.7.1
