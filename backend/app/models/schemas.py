@@ -8,3 +8,4 @@ class AnalysisResult(BaseModel):
     missing_keywords: List[str]
     strengths: str
     weaknesses: str
+    similarity_score: float = None 
