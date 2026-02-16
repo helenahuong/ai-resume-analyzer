@@ -1,11 +1,12 @@
 # backend/app/models/schemas.py
+# pyright: reportAttributeAccessIssue=none
 
-from pydantic import BaseModel
-from typing import List
+import pydantic
+from typing import List, Optional
 
-class AnalysisResult(BaseModel):
+class AnalysisResult(pydantic.BaseModel):
     matching_keywords: List[str]
     missing_keywords: List[str]
     strengths: str
     weaknesses: str
-    similarity_score: float = None 
+    similarity_score: Optional[float] = None 

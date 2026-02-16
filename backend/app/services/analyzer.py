@@ -1,13 +1,20 @@
-import openai
+# pyright: reportAttributeAccessIssue=none
 import spacy
-import torch
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+import openai
 from app.core.config import settings
 
-# Load SpaCy model
-nlp = spacy.load("en_core_web_sm")
+_nlp = None
 
-openai.api_key = settings.OPENAI_API_KEY
+def _get_nlp():
+    global _nlp
+    if _nlp is None:
+        _nlp = spacy.load("en_core_web_sm")
+    return _nlp
+
+# Initialize OpenAI client (openai package exports OpenAI in 1.x)
+client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)  # type: ignore[attr-defined]
 
 class Analyzer:
     def __init__(self, resume_text: str, job_description: str):
@@ -32,7 +39,7 @@ class Analyzer:
 
     def extract_data(self, text):
         # This method extracts keywords and other entities from the text
-        doc = nlp(text)
+        doc = _get_nlp()(text)
         keywords = [token.lemma_.lower() for token in doc if not token.is_stop and not token.is_punct and token.is_alpha]
         return {
             "text": text,
@@ -48,8 +55,11 @@ class Analyzer:
 
             # Calculate cosine similarity
             if resume_embedding is not None and job_embedding is not None:
-                score = cosine_similarity([resume_embedding], [job_embedding])[0][0]
-                return score
+                # Convert to numpy arrays and reshape for cosine_similarity
+                resume_arr = np.array(resume_embedding).reshape(1, -1)  # type: ignore[attr-defined]
+                job_arr = np.array(job_embedding).reshape(1, -1)  # type: ignore[attr-defined]
+                score = cosine_similarity(resume_arr, job_arr)[0][0]
+                return float(score)
             else:
                 return None
         except Exception as e:
@@ -57,32 +67,37 @@ class Analyzer:
             return None
 
     def get_embedding(self, text):
-        response = openai.Embedding.create(
+        # New OpenAI v1.0+ API
+        response = client.embeddings.create(
             model="text-embedding-ada-002",
             input=text
         )
-        return response['data'][0]['embedding']
+        return response.data[0].embedding
 
     def generate_strengths(self):
         prompt = f"Based on the following resume, identify the candidate's strengths:\n\n{self.resume_text}\n\nStrengths:"
-        response = openai.ChatCompletion.create(
+        # New OpenAI v1.0+ API
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a senior hiring executive."},
                 {"role": "user", "content": prompt},
             ]
         )
-        strengths = response['choices'][0]['message']['content'].strip()
+        content = response.choices[0].message.content
+        strengths = content.strip() if content else ""
         return strengths
 
     def generate_weaknesses(self):
         prompt = f"Based on the following resume and job description, identify areas where the candidate can improve to better match the job requirements:\n\nResume:\n{self.resume_text}\n\nJob Description:\n{self.job_description}\n\nWeaknesses:"
-        response = openai.ChatCompletion.create(
+        # New OpenAI v1.0+ API
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a senior hiring executive."},
                 {"role": "user", "content": prompt},
             ]
         )
-        weaknesses = response['choices'][0]['message']['content'].strip()
+        content = response.choices[0].message.content
+        weaknesses = content.strip() if content else ""
         return weaknesses

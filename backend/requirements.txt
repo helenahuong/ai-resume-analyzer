@@ -3,7 +3,9 @@ uvicorn[standard]
 pydantic-settings
 spacy
 PyPDF2
+# After pip install, run: python -m spacy download en_core_web_sm  (optional; fallback extraction works without it)
 python-docx
 python-multipart
-openai
-en-core-web-sm==3.7.1
+openai>=1.0.0
+scikit-learn
+numpy

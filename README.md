@@ -1,73 +1,135 @@
 # AI Resume Analyzer
 
-## Overview
-The **AI Resume Analyzer** is a web application designed to assist job seekers in analyzing their resumes against specific job descriptions. By leveraging AI and natural language processing, this tool provides insights on matching keywords, strengths, and weaknesses, helping applicants improve their resumes for better job prospects.
+Analyze your resume against any job description. Get keyword matches, gaps, and AI-powered strengths and weaknesses—all in one place.
+
+---
 
 ## Features
-- **Resume Upload**: Supports uploading resumes in PDF, DOC, and DOCX formats.
-- **Job Description Input**: Allows users to enter job descriptions for tailored analysis.
-- **Keyword Matching**: Identifies matching and missing keywords between the resume and job description.
-- **Strengths and Weaknesses Analysis**: Provides a detailed report highlighting areas of strength and areas for improvement in the resume.
 
-## Technologies Used
-- **Frontend**:
-  - [React.js](https://reactjs.org/)
-  - [Axios](https://axios-http.com/)
-  - [Tailwind CSS](https://tailwindcss.com/)
-  
-- **Backend**:
-  - [FastAPI](https://fastapi.tiangolo.com/)
-  - [OpenAI API](https://beta.openai.com/)
-  - [SpaCy](https://spacy.io/)
-  
-- **Environment**:
-  - Python 3.x
-  - Node.js
+- **Resume upload** — PDF, DOC, and DOCX
+- **Job description input** — Paste the full job posting for tailored analysis
+- **Keyword matching** — See which job-description keywords appear in your resume and which are missing
+- **Strengths & weaknesses** — OpenAI-generated feedback to improve your resume
+- **Similarity score** — Semantic similarity between your resume and the job description
 
-## Installation
+## Tech Stack
 
-### Prerequisites
-- Python 3.x
-- Node.js and npm
-- An OpenAI API key
+| Layer    | Stack |
+|----------|--------|
+| Frontend | React, Axios, Tailwind CSS, Framer Motion, React Hot Toast |
+| Backend  | FastAPI, Python 3.x |
+| NLP      | SpaCy (`en_core_web_sm`), scikit-learn |
+| AI       | OpenAI API |
 
-### Backend Setup
-1. **Clone the repository**:
-   git clone <repository-url>
-   cd backend
-2. **Create a virtual environment**:
+## Prerequisites
+
+- **Python 3.10+**
+- **Node.js 18+** and npm
+- **OpenAI API key** — [Create one](https://platform.openai.com/api-keys)
+
+## Quick Start
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/YOUR_USERNAME/ai-resume-analyzer.git
+cd ai-resume-analyzer
+```
+
+### 2. Backend setup
+
+```bash
+cd backend
 python -m venv .venv
-source .venv/bin/activate  # On Windows use .venv\Scripts\activate
-
-3. **Install dependencies**:
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-4. **Create a .env file: Create a .env file in the root directory and add your OpenAI API key:**
-OPENAI_API_KEY=your-secret-openai-api-key
+Create a `.env` file in the `backend` folder:
 
-**5. Run the server:**
-uvicorn app.main:app --reload
+```env
+OPENAI_API_KEY=sk-your-openai-api-key
+```
 
-**The backend will be accessible at http://localhost:8000.**
+Optional but recommended (better keyword/entity extraction):
 
-### Frontend Setup
-1. **Navigate to the frontend directory:**
+```bash
+python -m spacy download en_core_web_sm
+```
+
+Start the API:
+
+```bash
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+API base URL: **http://127.0.0.1:8000**
+
+### 3. Frontend setup
+
+In a new terminal:
+
+```bash
 cd frontend
-2. **Install dependencies:**
 npm install
-**3. Run the application:**
 npm start
+```
 
-**The frontend will be accessible at http://localhost:3000.**
+App URL: **http://localhost:3000** (or the next free port, e.g. 3001, 3002).
 
-### Usage
-- Open the web application in your browser.
-- Upload a resume file or enter resume text.
-- Enter the job description for the position you are applying for.
-- Click the "Analyze Resume" button to receive insights about the resume.
-- Review the results, including matching keywords, missing keywords, strengths, and weaknesses.
+### 4. Use the app
 
-### Acknowledgments
+1. Open the frontend URL in your browser.
+2. Upload your resume (PDF, DOC, or DOCX).
+3. Paste the job description.
+4. Click **Analyze** and review matching keywords, missing keywords, strengths, weaknesses, and similarity score.
 
-OpenAI for providing the AI capabilities.
-SpaCy for powerful NLP tools.
+## Project structure
+
+```
+ai-resume-analyzer/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── routes.py      # API endpoints
+│   │   ├── core/
+│   │   │   └── config.py      # Settings, env
+│   │   ├── models/
+│   │   │   └── schemas.py     # Pydantic models
+│   │   ├── services/
+│   │   │   ├── resume_parser.py
+│   │   │   └── analyzer.py
+│   │   └── main.py
+│   ├── .env                    # Not in git; add OPENAI_API_KEY
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   └── package.json
+└── README.md
+```
+
+## Environment variables
+
+| Variable        | Required | Description           |
+|-----------------|----------|-----------------------|
+| `OPENAI_API_KEY` | Yes      | Your OpenAI API key   |
+
+Store these in `backend/.env`. Do not commit `.env`.
+
+## API
+
+### POST `/api/analyze`
+
+Analyzes a resume against a job description.
+
+| Field             | Type   | Description                    |
+|-------------------|--------|--------------------------------|
+| `resume`          | file   | PDF, DOC, or DOCX              |
+| `job_description` | string | Job posting text (form field)  |
+
+**Response:** `matching_keywords`, `missing_keywords`, `strengths`, `weaknesses`, `similarity_score`
+
+## License
+
+MIT
